@@ -81,6 +81,7 @@
   .badge-ok { background:rgba(46,204,113,.15); color:var(--success); border:1px solid rgba(46,204,113,.3); }
   .badge-pending { background:rgba(0,180,216,.15); color:var(--accent); border:1px solid rgba(0,180,216,.3); }
   .badge-hold { background:rgba(136,153,170,.15); color:var(--text-muted); border:1px solid rgba(136,153,170,.3); }
+  .badge-done { background:rgba(46,204,113,.2); color:var(--success); border:1px solid rgba(46,204,113,.4); }
   .priority-high { color:var(--danger); font-weight:600; }
   .priority-medium { color:var(--warning); font-weight:600; }
   .priority-low { color:var(--success); font-weight:600; }
@@ -187,7 +188,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
           <label for="fStatus">Status</label>
           <select id="fStatus">
             <option>Pending Replacement</option><option>Scheduled</option>
-            <option>Overdue</option><option>On Hold</option><option>Rejected</option>
+            <option>Overdue</option><option>On Hold</option><option>Rejected</option><option>Done</option>
           </select>
         </div>
         <div class="form-group">
@@ -264,7 +265,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
     <select id="filterStatus">
       <option value="">All Statuses</option>
       <option>Pending Replacement</option><option>Scheduled</option>
-      <option>Overdue</option><option>On Hold</option><option>Rejected</option>
+      <option>Overdue</option><option>On Hold</option><option>Rejected</option><option>Done</option>
     </select>
     <select id="filterPriority">
       <option value="">All Priorities</option>
@@ -446,20 +447,22 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
   }
 
   function getRowClass(e) {
+    if (e.status === 'Done') return 'row-ok';
     if (e.status === 'Overdue') return 'row-overdue';
     var today = new Date(); today.setHours(0,0,0,0);
     var due = new Date(e.dueDate + 'T00:00:00');
-    if (e.dueDate && due < today && e.status !== 'On Hold') return 'row-overdue';
+    if (e.dueDate && due < today && e.status !== 'On Hold' && e.status !== 'Done') return 'row-overdue';
     var diff = (due - today) / (1000*60*60*24);
     if (e.dueDate && diff <= 7 && diff >= 0) return 'row-due-soon';
     return 'row-ok';
   }
 
   function getBadgeClass(e) {
+    if (e.status === 'Done') return 'badge-done';
     if (e.status === 'Overdue') return 'badge-overdue';
     var today = new Date(); today.setHours(0,0,0,0);
     var due = new Date(e.dueDate + 'T00:00:00');
-    if (e.dueDate && due < today && e.status !== 'On Hold') return 'badge-overdue';
+    if (e.dueDate && due < today && e.status !== 'On Hold' && e.status !== 'Done') return 'badge-overdue';
     if (e.status === 'On Hold') return 'badge-hold';
     if (e.status === 'Rejected') return 'badge-overdue';
     if (e.status === 'Scheduled') return 'badge-ok';
@@ -469,7 +472,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
   function getBadgeLabel(e) {
     var today = new Date(); today.setHours(0,0,0,0);
     var due = new Date(e.dueDate + 'T00:00:00');
-    if (e.dueDate && due < today && e.status !== 'On Hold' && e.status !== 'Overdue') return 'OVERDUE';
+    if (e.dueDate && due < today && e.status !== 'On Hold' && e.status !== 'Overdue' && e.status !== 'Done') return 'OVERDUE';
     return e.status.toUpperCase();
   }
 
@@ -531,7 +534,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
     for (var i = 0; i < entries.length; i++) {
       var e = entries[i];
       var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
-      if (e.status === 'Overdue' || (due && due < today && e.status !== 'On Hold')) overdue++;
+      if (e.status === 'Overdue' || (due && due < today && e.status !== 'On Hold' && e.status !== 'Done')) overdue++;
       else if (due) { var diff = (due - today) / (1000*60*60*24); if (diff <= 7 && diff >= 0) dueSoon++; }
       if (e.status === 'Pending Replacement') pending++;
     }
