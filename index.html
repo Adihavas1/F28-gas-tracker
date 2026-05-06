@@ -166,15 +166,53 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
           <label for="fGasName">Gas Name *</label>
           <select id="fGasName">
             <option value="">-- Select Gas --</option>
-            <option>SiCl4</option><option>N2O</option><option>HCl</option><option>NF3</option>
-            <option>SiH4</option><option>CH4</option><option>NH3</option><option>CHF3</option>
-            <option>WF6</option><option>Cl2</option><option>BCl3</option><option>CF4</option>
-            <option>SF6</option><option>H2</option><option>O2</option><option>Ar</option>
-            <option>N2</option><option>He</option><option>LPG</option><option>B2H6/H2</option>
-            <option>B2H6/N2</option><option>DCS</option><option>COS</option><option>FAN</option>
-            <option>Kr/Ne</option><option>CH3F</option><option>C4F8</option><option>C4F6</option>
-            <option>CH2F2</option><option>HBr</option><option>GeH4/H2</option><option>CO</option>
-            <option>Other</option>
+            <option>AXN</option>
+            <option>B2H6H2</option>
+            <option>B2H6N2</option>
+            <option>BCL3</option>
+            <option>C3H6</option>
+            <option>C4F6</option>
+            <option>DCS</option>
+            <option>C4F8</option>
+            <option>CF4</option>
+            <option>CH2F2</option>
+            <option>CH3F</option>
+            <option>CH4</option>
+            <option>CL2</option>
+            <option>CLF3</option>
+            <option>F2AR</option>
+            <option>CH4AR</option>
+            <option>CHF3</option>
+            <option>F2N2</option>
+            <option>H2N2</option>
+            <option>HEN2</option>
+            <option>HF</option>
+            <option>HPH2</option>
+            <option>KRNE</option>
+            <option>N2O</option>
+            <option>CO</option>
+            <option>NF3</option>
+            <option>COS</option>
+            <option>NH3</option>
+            <option>F2ARXENE</option>
+            <option>REDUC</option>
+            <option>FAN</option>
+            <option>FKN</option>
+            <option>SICL4</option>
+            <option>GEH4H2</option>
+            <option>H2</option>
+            <option>H2HE</option>
+            <option>HBR</option>
+            <option>WF6</option>
+            <option>HCL</option>
+            <option>HPD2</option>
+            <option>PH3</option>
+            <option>SF6</option>
+            <option>SI2H6</option>
+            <option>SIF4</option>
+            <option>SIH4</option>
+            <option>TURNER</option>
+            <option>TSA</option>
           </select>
         </div>
         <div class="form-group">
@@ -204,37 +242,26 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
           <label for="fAddedBy">Added By *</label>
           <select id="fAddedBy">
             <option value="">-- Select Name --</option>
-            <option>Algim, Shlomi</option>
+            <option>Abu Reesh, Sleman</option>
             <option>Attad, Yosi</option>
             <option>Avraham, Rotem</option>
-            <option>Awad, Tamir</option>
             <option>Bakman, Anatoly</option>
-            <option>Benjamin, Roni</option>
             <option>Berezanskiy, Gregory</option>
             <option>Binyamin, Nitzan</option>
-            <option>Binyamin, Shimon</option>
-            <option>Butbul, Lior</option>
             <option>Cazes, Ohad</option>
-            <option>Chananel, Roi</option>
-            <option>Cohen, ShalomX</option>
-            <option>Cohen, Sharon1</option>
-            <option>Dolinsky, Yair</option>
-            <option>Edri, Miha</option>
-            <option>Eliav, Ravid</option>
+            <option>Chechulin, Ilya</option>
+            <option>Damri, Dan</option>
+            <option>Elkayam, Nitzan Meir</option>
             <option>Filipov, Maxim</option>
-            <option>Gabai, Eldad</option>
-            <option>Gruber, Yuval</option>
-            <option>Gutin, Sagi</option>
             <option>Hasid, Erez</option>
             <option selected>Havas, Adi</option>
+            <option>Iluz, Or</option>
             <option>Katz, Meir</option>
             <option>Keren, Eyal</option>
-            <option>Kor Sade, Ilan</option>
             <option>Madmoni, Asaf</option>
             <option>Mograby, Dor</option>
-            <option>Nahimov, Sergey</option>
             <option>Rozenfeld, David</option>
-            <option>Sarusi, Gil</option>
+            <option>Rusyan, Astrik</option>
             <option>Speisky, Shiran</option>
           </select>
         </div>
@@ -335,7 +362,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
     }
   }
 
-  var LOCAL_KEY = 'gasTrackerEntries_v5';
+  var LOCAL_KEY = 'gasTrackerEntries_v6';
   var entries = [];
   var editingId = null;
   var deleteTargetId = null;
@@ -402,12 +429,12 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function loadSampleData() {
     entries = [
-      { id: genId(), gasName: 'SiCl4', location: 'F28_SICL4_612_S3', status: 'Pre Purge', dueDate: offsetDate(0), priority: 'High', addedBy: 'Havas, Adi', notes: 'Starting pre-purge sequence.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'SICL4', location: 'F28_SICL4_612_S3', status: 'Pre Purge', dueDate: offsetDate(0), priority: 'High', addedBy: 'Havas, Adi', notes: 'Starting pre-purge sequence.', created: new Date().toISOString() },
       { id: genId(), gasName: 'N2O', location: 'F28A_N2O_TT_LC1', status: 'Cylinder Change', dueDate: offsetDate(0), priority: 'High', addedBy: 'Cazes, Ohad', notes: 'Tube trailer switchover in progress.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'HCl', location: 'F28_HCL_114AB_G2', status: 'Post Purge', dueDate: offsetDate(0), priority: 'Medium', addedBy: 'Rozenfeld, David', notes: 'Post purge running. Monitoring pressure.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'NF3', location: 'F28A_NF3_154V6_K135', status: 'Online', dueDate: offsetDate(-1), priority: 'Low', addedBy: 'Speisky, Shiran', notes: 'Completed - back online. All checks passed.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'CHF3', location: 'F28_CHF3_Y_CYL_NEW', status: 'Pre Purge Completed', dueDate: offsetDate(0), priority: 'High', addedBy: 'Gutin, Sagi', notes: 'Pre purge done. Ready for cylinder change.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'BCl3', location: 'F28_BCL3_DPO_ICE', status: 'Cylinder Change Completed', dueDate: offsetDate(0), priority: 'High', addedBy: 'Nahimov, Sergey', notes: 'New cylinder installed. Proceed to post purge.', created: new Date().toISOString() }
+      { id: genId(), gasName: 'HCL', location: 'F28_HCL_114AB_G2', status: 'Post Purge', dueDate: offsetDate(0), priority: 'Medium', addedBy: 'Rozenfeld, David', notes: 'Post purge running.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'NF3', location: 'F28A_NF3_154V6_K135', status: 'Online', dueDate: offsetDate(-1), priority: 'Low', addedBy: 'Speisky, Shiran', notes: 'Completed - back online.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'CHF3', location: 'F28_CHF3_Y_CYL_NEW', status: 'Pre Purge Completed', dueDate: offsetDate(0), priority: 'High', addedBy: 'Mograby, Dor', notes: 'Pre purge done.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'BCL3', location: 'F28_BCL3_DPO_ICE', status: 'Cylinder Change Completed', dueDate: offsetDate(0), priority: 'High', addedBy: 'Berezanskiy, Gregory', notes: 'New cylinder installed.', created: new Date().toISOString() }
     ];
     if (useSupabase) { for (var i = 0; i < entries.length; i++) { sbInsert(entries[i]); } }
     else { saveToLocal(); }
