@@ -77,11 +77,13 @@
   tbody td { padding:10px 14px; font-size:13px; vertical-align:middle; }
   .badge { padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; display:inline-block; }
   .badge-overdue { background:rgba(233,69,96,.15); color:var(--danger); border:1px solid rgba(233,69,96,.3); }
-  .badge-due-soon { background:rgba(249,168,37,.15); color:var(--warning); border:1px solid rgba(249,168,37,.3); }
-  .badge-ok { background:rgba(46,204,113,.15); color:var(--success); border:1px solid rgba(46,204,113,.3); }
-  .badge-pending { background:rgba(0,180,216,.15); color:var(--accent); border:1px solid rgba(0,180,216,.3); }
-  .badge-hold { background:rgba(136,153,170,.15); color:var(--text-muted); border:1px solid rgba(136,153,170,.3); }
-  .badge-done { background:rgba(46,204,113,.2); color:var(--success); border:1px solid rgba(46,204,113,.4); }
+  .badge-pre-purge { background:rgba(249,168,37,.18); color:#f9a825; border:1px solid rgba(249,168,37,.4); }
+  .badge-pre-purge-done { background:rgba(156,204,101,.18); color:#9ccc65; border:1px solid rgba(156,204,101,.4); }
+  .badge-cyl-change { background:rgba(0,180,216,.18); color:var(--accent); border:1px solid rgba(0,180,216,.4); }
+  .badge-cyl-change-done { background:rgba(79,195,247,.18); color:#4fc3f7; border:1px solid rgba(79,195,247,.4); }
+  .badge-post-purge { background:rgba(171,71,188,.18); color:#ab47bc; border:1px solid rgba(171,71,188,.4); }
+  .badge-post-purge-done { background:rgba(0,188,212,.18); color:#00bcd4; border:1px solid rgba(0,188,212,.4); }
+  .badge-online { background:rgba(46,204,113,.2); color:var(--success); border:1px solid rgba(46,204,113,.4); }
   .priority-high { color:var(--danger); font-weight:600; }
   .priority-medium { color:var(--warning); font-weight:600; }
   .priority-low { color:var(--success); font-weight:600; }
@@ -187,8 +189,10 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
         <div class="form-group">
           <label for="fStatus">Status</label>
           <select id="fStatus">
-            <option>Pending Replacement</option><option>Scheduled</option>
-            <option>Overdue</option><option>On Hold</option><option>Rejected</option><option>Done</option>
+            <option>Pre Purge</option><option>Pre Purge Completed</option>
+            <option>Cylinder Change</option><option>Cylinder Change Completed</option>
+            <option>Post Purge</option><option>Post Purge Completed</option>
+            <option>Online</option>
           </select>
         </div>
         <div class="form-group">
@@ -264,8 +268,10 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
     <select id="filterGas"><option value="">All Gases</option></select>
     <select id="filterStatus">
       <option value="">All Statuses</option>
-      <option>Pending Replacement</option><option>Scheduled</option>
-      <option>Overdue</option><option>On Hold</option><option>Rejected</option><option>Done</option>
+      <option>Pre Purge</option><option>Pre Purge Completed</option>
+      <option>Cylinder Change</option><option>Cylinder Change Completed</option>
+      <option>Post Purge</option><option>Post Purge Completed</option>
+      <option>Online</option>
     </select>
     <select id="filterPriority">
       <option value="">All Priorities</option>
@@ -402,12 +408,12 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function loadSampleData() {
     entries = [
-      { id: genId(), gasName: 'SiCl4', location: 'F28_SICL4_612_S3', cylinderId: 'CYL-2025-4421', status: 'Overdue', dueDate: offsetDate(-5), priority: 'High', addedBy: 'Havas, Adi', notes: 'TCU issue - waiting for parts. Tool owner notified.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'N2O', location: 'F28A_N2O_TT_LC1', cylinderId: 'TT-8834-B', status: 'Pending Replacement', dueDate: offsetDate(3), priority: 'High', addedBy: 'Cazes, Ohad', notes: 'Tube trailer switchover scheduled for next shift.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'HCl', location: 'F28_HCL_114AB_G2', cylinderId: 'CYL-2025-7192', status: 'Scheduled', dueDate: offsetDate(10), priority: 'Medium', addedBy: 'Rozenfeld, David', notes: 'Replacement ordered via Wiings. ETA confirmed.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'NF3', location: 'F28A_NF3_154V6_K135', cylinderId: 'CYL-2025-0093', status: 'On Hold', dueDate: offsetDate(14), priority: 'Low', addedBy: 'Speisky, Shiran', notes: 'Waiting for VHFS SW update completion.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'CHF3', location: 'F28_CHF3_Y_CYL_NEW', cylinderId: 'Y-CYL-6620', status: 'Pending Replacement', dueDate: offsetDate(1), priority: 'High', addedBy: 'Gutin, Sagi', notes: 'Y-cylinder transition - pressure check needed.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'BCl3', location: 'F28_BCL3_DPO_ICE', cylinderId: 'CYL-2025-3100', status: 'Overdue', dueDate: offsetDate(-2), priority: 'High', addedBy: 'Nahimov, Sergey', notes: 'DPO cabinet - schedule tool downtime with ICE owner.', created: new Date().toISOString() }
+      { id: genId(), gasName: 'SiCl4', location: 'F28_SICL4_612_S3', cylinderId: 'CYL-2025-4421', status: 'Pre Purge', dueDate: offsetDate(-5), priority: 'High', addedBy: 'Havas, Adi', notes: 'TCU issue - waiting for parts. Tool owner notified.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'N2O', location: 'F28A_N2O_TT_LC1', cylinderId: 'TT-8834-B', status: 'Cylinder Change', dueDate: offsetDate(3), priority: 'High', addedBy: 'Cazes, Ohad', notes: 'Tube trailer switchover scheduled for next shift.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'HCl', location: 'F28_HCL_114AB_G2', cylinderId: 'CYL-2025-7192', status: 'Post Purge', dueDate: offsetDate(10), priority: 'Medium', addedBy: 'Rozenfeld, David', notes: 'Replacement ordered via Wiings. ETA confirmed.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'NF3', location: 'F28A_NF3_154V6_K135', cylinderId: 'CYL-2025-0093', status: 'Online', dueDate: offsetDate(14), priority: 'Low', addedBy: 'Speisky, Shiran', notes: 'Completed - back online. All checks passed.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'CHF3', location: 'F28_CHF3_Y_CYL_NEW', cylinderId: 'Y-CYL-6620', status: 'Pre Purge Completed', dueDate: offsetDate(1), priority: 'High', addedBy: 'Gutin, Sagi', notes: 'Pre purge done - ready for cylinder change.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'BCl3', location: 'F28_BCL3_DPO_ICE', cylinderId: 'CYL-2025-3100', status: 'Cylinder Change Completed', dueDate: offsetDate(-2), priority: 'High', addedBy: 'Nahimov, Sergey', notes: 'New cylinder installed. Proceed to post purge.', created: new Date().toISOString() }
     ];
     if (useSupabase) { for (var i = 0; i < entries.length; i++) { sbInsert(entries[i]); } }
     else { saveToLocal(); }
@@ -447,32 +453,35 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
   }
 
   function getRowClass(e) {
-    if (e.status === 'Done') return 'row-ok';
-    if (e.status === 'Overdue') return 'row-overdue';
+    if (e.status === 'Online') return 'row-ok';
+    if (e.status === 'Pre Purge Completed' || e.status === 'Cylinder Change Completed' || e.status === 'Post Purge Completed') return 'row-ok';
     var today = new Date(); today.setHours(0,0,0,0);
-    var due = new Date(e.dueDate + 'T00:00:00');
-    if (e.dueDate && due < today && e.status !== 'On Hold' && e.status !== 'Done') return 'row-overdue';
-    var diff = (due - today) / (1000*60*60*24);
-    if (e.dueDate && diff <= 7 && diff >= 0) return 'row-due-soon';
+    var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
+    if (due && due < today && e.status !== 'Online') return 'row-overdue';
+    if (e.status === 'Pre Purge' || e.status === 'Cylinder Change' || e.status === 'Post Purge') return 'row-due-soon';
+    var diff = due ? (due - today) / (1000*60*60*24) : 999;
+    if (due && diff <= 7 && diff >= 0) return 'row-due-soon';
     return 'row-ok';
   }
 
   function getBadgeClass(e) {
-    if (e.status === 'Done') return 'badge-done';
-    if (e.status === 'Overdue') return 'badge-overdue';
+    if (e.status === 'Online') return 'badge-online';
+    if (e.status === 'Pre Purge') return 'badge-pre-purge';
+    if (e.status === 'Pre Purge Completed') return 'badge-pre-purge-done';
+    if (e.status === 'Cylinder Change') return 'badge-cyl-change';
+    if (e.status === 'Cylinder Change Completed') return 'badge-cyl-change-done';
+    if (e.status === 'Post Purge') return 'badge-post-purge';
+    if (e.status === 'Post Purge Completed') return 'badge-post-purge-done';
     var today = new Date(); today.setHours(0,0,0,0);
-    var due = new Date(e.dueDate + 'T00:00:00');
-    if (e.dueDate && due < today && e.status !== 'On Hold' && e.status !== 'Done') return 'badge-overdue';
-    if (e.status === 'On Hold') return 'badge-hold';
-    if (e.status === 'Rejected') return 'badge-overdue';
-    if (e.status === 'Scheduled') return 'badge-ok';
-    return 'badge-pending';
+    var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
+    if (due && due < today && e.status !== 'Online') return 'badge-overdue';
+    return 'badge-pre-purge';
   }
 
   function getBadgeLabel(e) {
     var today = new Date(); today.setHours(0,0,0,0);
-    var due = new Date(e.dueDate + 'T00:00:00');
-    if (e.dueDate && due < today && e.status !== 'On Hold' && e.status !== 'Overdue' && e.status !== 'Done') return 'OVERDUE';
+    var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
+    if (due && due < today && e.status !== 'Online' && e.status.indexOf('Completed') === -1) return 'OVERDUE';
     return e.status.toUpperCase();
   }
 
@@ -530,18 +539,18 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function updateStats() {
     var today = new Date(); today.setHours(0,0,0,0);
-    var overdue = 0, dueSoon = 0, pending = 0;
+    var inProgress = 0, dueSoon = 0, online = 0;
     for (var i = 0; i < entries.length; i++) {
       var e = entries[i];
       var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
-      if (e.status === 'Overdue' || (due && due < today && e.status !== 'On Hold' && e.status !== 'Done')) overdue++;
-      else if (due) { var diff = (due - today) / (1000*60*60*24); if (diff <= 7 && diff >= 0) dueSoon++; }
-      if (e.status === 'Pending Replacement') pending++;
+      if (e.status === 'Pre Purge' || e.status === 'Cylinder Change' || e.status === 'Post Purge') inProgress++;
+      if (e.status === 'Online') online++;
+      if (due) { var diff = (due - today) / (1000*60*60*24); if (diff <= 7 && diff >= 0 && e.status !== 'Online') dueSoon++; }
     }
     $id('statTotal').textContent = entries.length;
-    $id('statOverdue').textContent = overdue;
+    $id('statInProgress').textContent = inProgress;
     $id('statDueSoon').textContent = dueSoon;
-    $id('statPending').textContent = pending;
+    $id('statOnline').textContent = online;
   }
 
   function updateGasFilter() {
@@ -643,7 +652,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function resetForm() {
     editingId = null; fGasName.value = ''; fLocation.value = ''; fCylinderId.value = '';
-    fStatus.value = 'Pending Replacement'; fDueDate.value = ''; fPriority.value = 'Medium';
+    fStatus.value = 'Pre Purge'; fDueDate.value = ''; fPriority.value = 'Medium';
     fAddedBy.value = 'Havas, Adi'; fNotes.value = '';
     formTitle.innerHTML = '&#10133; Add New Entry';
   }
