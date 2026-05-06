@@ -76,7 +76,6 @@
   tbody tr:hover { background:rgba(0,180,216,.06); }
   tbody td { padding:10px 14px; font-size:13px; vertical-align:middle; }
   .badge { padding:4px 10px; border-radius:12px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; display:inline-block; }
-  .badge-overdue { background:rgba(233,69,96,.15); color:var(--danger); border:1px solid rgba(233,69,96,.3); }
   .badge-pre-purge { background:rgba(249,168,37,.18); color:#f9a825; border:1px solid rgba(249,168,37,.4); }
   .badge-pre-purge-done { background:rgba(156,204,101,.18); color:#9ccc65; border:1px solid rgba(156,204,101,.4); }
   .badge-cyl-change { background:rgba(0,180,216,.18); color:var(--accent); border:1px solid rgba(0,180,216,.4); }
@@ -151,9 +150,9 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 <div class="container">
   <div class="dashboard">
     <div class="dash-card total"><div class="label">Total Entries</div><div class="value" id="statTotal">0</div></div>
-    <div class="dash-card overdue"><div class="label">&#9888;&#65039; Overdue</div><div class="value" id="statOverdue">0</div></div>
-    <div class="dash-card due-soon"><div class="label">&#9200; Due Within 7 Days</div><div class="value" id="statDueSoon">0</div></div>
-    <div class="dash-card pending"><div class="label">&#128260; Pending</div><div class="value" id="statPending">0</div></div>
+    <div class="dash-card due-soon"><div class="label">&#9888;&#65039; Pending</div><div class="value" id="statPending">0</div></div>
+    <div class="dash-card total"><div class="label">&#9989; Online</div><div class="value" id="statOnline">0</div></div>
+    <div class="dash-card overdue"><div class="label">&#128308; High Priority</div><div class="value" id="statHighPriority">0</div></div>
   </div>
 
   <div class="form-panel">
@@ -183,10 +182,6 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
           <input type="text" id="fLocation" placeholder="e.g. F28A_SICL4_612_S3">
         </div>
         <div class="form-group">
-          <label for="fCylinderId">Cylinder ID</label>
-          <input type="text" id="fCylinderId" placeholder="e.g. CYL-2025-8834">
-        </div>
-        <div class="form-group">
           <label for="fStatus">Status</label>
           <select id="fStatus">
             <option>Pre Purge</option><option>Pre Purge Completed</option>
@@ -196,7 +191,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
           </select>
         </div>
         <div class="form-group">
-          <label for="fDueDate">Due Date</label>
+          <label for="fDueDate">Date</label>
           <input type="date" id="fDueDate">
         </div>
         <div class="form-group">
@@ -287,9 +282,8 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
           <th data-sort="index">#</th>
           <th data-sort="gasName">Gas <span class="sort-arrow" id="sort-gasName"></span></th>
           <th data-sort="location">Location <span class="sort-arrow" id="sort-location"></span></th>
-          <th data-sort="cylinderId">Cylinder ID <span class="sort-arrow" id="sort-cylinderId"></span></th>
           <th data-sort="status">Status <span class="sort-arrow" id="sort-status"></span></th>
-          <th data-sort="dueDate">Due Date <span class="sort-arrow" id="sort-dueDate"></span></th>
+          <th data-sort="dueDate">Date <span class="sort-arrow" id="sort-dueDate"></span></th>
           <th data-sort="priority">Priority <span class="sort-arrow" id="sort-priority"></span></th>
           <th data-sort="addedBy">Added By <span class="sort-arrow" id="sort-addedBy"></span></th>
           <th>Notes</th>
@@ -341,7 +335,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
     }
   }
 
-  var LOCAL_KEY = 'gasTrackerEntries_v4';
+  var LOCAL_KEY = 'gasTrackerEntries_v5';
   var entries = [];
   var editingId = null;
   var deleteTargetId = null;
@@ -351,14 +345,14 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function toDb(e) {
     return { id: e.id, gas_name: e.gasName, location: e.location,
-      cylinder_id: e.cylinderId || '', status: e.status, due_date: e.dueDate || '',
+      status: e.status, due_date: e.dueDate || '',
       priority: e.priority, added_by: e.addedBy || '', notes: e.notes || '',
       created: e.created || new Date().toISOString() };
   }
 
   function fromDb(r) {
     return { id: r.id, gasName: r.gas_name, location: r.location,
-      cylinderId: r.cylinder_id || '', status: r.status, dueDate: r.due_date || '',
+      status: r.status, dueDate: r.due_date || '',
       priority: r.priority, addedBy: r.added_by || '', notes: r.notes || '',
       created: r.created || '' };
   }
@@ -408,19 +402,19 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function loadSampleData() {
     entries = [
-      { id: genId(), gasName: 'SiCl4', location: 'F28_SICL4_612_S3', cylinderId: 'CYL-2025-4421', status: 'Pre Purge', dueDate: offsetDate(-5), priority: 'High', addedBy: 'Havas, Adi', notes: 'TCU issue - waiting for parts. Tool owner notified.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'N2O', location: 'F28A_N2O_TT_LC1', cylinderId: 'TT-8834-B', status: 'Cylinder Change', dueDate: offsetDate(3), priority: 'High', addedBy: 'Cazes, Ohad', notes: 'Tube trailer switchover scheduled for next shift.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'HCl', location: 'F28_HCL_114AB_G2', cylinderId: 'CYL-2025-7192', status: 'Post Purge', dueDate: offsetDate(10), priority: 'Medium', addedBy: 'Rozenfeld, David', notes: 'Replacement ordered via Wiings. ETA confirmed.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'NF3', location: 'F28A_NF3_154V6_K135', cylinderId: 'CYL-2025-0093', status: 'Online', dueDate: offsetDate(14), priority: 'Low', addedBy: 'Speisky, Shiran', notes: 'Completed - back online. All checks passed.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'CHF3', location: 'F28_CHF3_Y_CYL_NEW', cylinderId: 'Y-CYL-6620', status: 'Pre Purge Completed', dueDate: offsetDate(1), priority: 'High', addedBy: 'Gutin, Sagi', notes: 'Pre purge done - ready for cylinder change.', created: new Date().toISOString() },
-      { id: genId(), gasName: 'BCl3', location: 'F28_BCL3_DPO_ICE', cylinderId: 'CYL-2025-3100', status: 'Cylinder Change Completed', dueDate: offsetDate(-2), priority: 'High', addedBy: 'Nahimov, Sergey', notes: 'New cylinder installed. Proceed to post purge.', created: new Date().toISOString() }
+      { id: genId(), gasName: 'SiCl4', location: 'F28_SICL4_612_S3', status: 'Pre Purge', dueDate: offsetDate(0), priority: 'High', addedBy: 'Havas, Adi', notes: 'Starting pre-purge sequence.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'N2O', location: 'F28A_N2O_TT_LC1', status: 'Cylinder Change', dueDate: offsetDate(0), priority: 'High', addedBy: 'Cazes, Ohad', notes: 'Tube trailer switchover in progress.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'HCl', location: 'F28_HCL_114AB_G2', status: 'Post Purge', dueDate: offsetDate(0), priority: 'Medium', addedBy: 'Rozenfeld, David', notes: 'Post purge running. Monitoring pressure.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'NF3', location: 'F28A_NF3_154V6_K135', status: 'Online', dueDate: offsetDate(-1), priority: 'Low', addedBy: 'Speisky, Shiran', notes: 'Completed - back online. All checks passed.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'CHF3', location: 'F28_CHF3_Y_CYL_NEW', status: 'Pre Purge Completed', dueDate: offsetDate(0), priority: 'High', addedBy: 'Gutin, Sagi', notes: 'Pre purge done. Ready for cylinder change.', created: new Date().toISOString() },
+      { id: genId(), gasName: 'BCl3', location: 'F28_BCL3_DPO_ICE', status: 'Cylinder Change Completed', dueDate: offsetDate(0), priority: 'High', addedBy: 'Nahimov, Sergey', notes: 'New cylinder installed. Proceed to post purge.', created: new Date().toISOString() }
     ];
     if (useSupabase) { for (var i = 0; i < entries.length; i++) { sbInsert(entries[i]); } }
     else { saveToLocal(); }
   }
 
   var $id = function(id) { return document.getElementById(id); };
-  var fGasName, fLocation, fCylinderId, fStatus, fDueDate, fPriority, fAddedBy, fNotes;
+  var fGasName, fLocation, fStatus, fDueDate, fPriority, fAddedBy, fNotes;
   var tableBody, emptyState, formTitle, formContent, searchInput;
   var filterGas, filterStatus, filterPriority, filterAddedBy;
 
@@ -454,13 +448,8 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function getRowClass(e) {
     if (e.status === 'Online') return 'row-ok';
-    if (e.status === 'Pre Purge Completed' || e.status === 'Cylinder Change Completed' || e.status === 'Post Purge Completed') return 'row-ok';
-    var today = new Date(); today.setHours(0,0,0,0);
-    var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
-    if (due && due < today && e.status !== 'Online') return 'row-overdue';
+    if (e.status.indexOf('Completed') !== -1) return 'row-ok';
     if (e.status === 'Pre Purge' || e.status === 'Cylinder Change' || e.status === 'Post Purge') return 'row-due-soon';
-    var diff = due ? (due - today) / (1000*60*60*24) : 999;
-    if (due && diff <= 7 && diff >= 0) return 'row-due-soon';
     return 'row-ok';
   }
 
@@ -472,16 +461,10 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
     if (e.status === 'Cylinder Change Completed') return 'badge-cyl-change-done';
     if (e.status === 'Post Purge') return 'badge-post-purge';
     if (e.status === 'Post Purge Completed') return 'badge-post-purge-done';
-    var today = new Date(); today.setHours(0,0,0,0);
-    var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
-    if (due && due < today && e.status !== 'Online') return 'badge-overdue';
     return 'badge-pre-purge';
   }
 
   function getBadgeLabel(e) {
-    var today = new Date(); today.setHours(0,0,0,0);
-    var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
-    if (due && due < today && e.status !== 'Online' && e.status.indexOf('Completed') === -1) return 'OVERDUE';
     return e.status.toUpperCase();
   }
 
@@ -490,7 +473,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
     var fG = filterGas.value; var fS = filterStatus.value;
     var fP = filterPriority.value; var fA = filterAddedBy.value;
     var filtered = entries.filter(function(e) {
-      var txt = [e.gasName, e.location, e.cylinderId, e.addedBy || '', e.notes].join(' ').toLowerCase();
+      var txt = [e.gasName, e.location, e.addedBy || '', e.notes].join(' ').toLowerCase();
       if (search && txt.indexOf(search) === -1) return false;
       if (fG && e.gasName !== fG) return false;
       if (fS && e.status !== fS) return false;
@@ -521,7 +504,6 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
         html += '<td style="color:var(--text-muted);">' + (i + 1) + '</td>';
         html += '<td><strong>' + esc(e.gasName) + '</strong></td>';
         html += '<td>' + esc(e.location) + '</td>';
-        html += '<td style="font-family:monospace;">' + esc(e.cylinderId) + '</td>';
         html += '<td><span class="badge ' + bc + '">' + bl + '</span></td>';
         html += '<td>' + (e.dueDate ? formatDate(e.dueDate) : '&mdash;') + '</td>';
         html += '<td><span class="' + pc + '">' + esc(e.priority) + '</span></td>';
@@ -538,19 +520,17 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
   }
 
   function updateStats() {
-    var today = new Date(); today.setHours(0,0,0,0);
-    var inProgress = 0, dueSoon = 0, online = 0;
+    var pending = 0, online = 0, highPri = 0;
     for (var i = 0; i < entries.length; i++) {
       var e = entries[i];
-      var due = e.dueDate ? new Date(e.dueDate + 'T00:00:00') : null;
-      if (e.status === 'Pre Purge' || e.status === 'Cylinder Change' || e.status === 'Post Purge') inProgress++;
+      if (e.status !== 'Online') pending++;
       if (e.status === 'Online') online++;
-      if (due) { var diff = (due - today) / (1000*60*60*24); if (diff <= 7 && diff >= 0 && e.status !== 'Online') dueSoon++; }
+      if (e.priority === 'High') highPri++;
     }
     $id('statTotal').textContent = entries.length;
-    $id('statInProgress').textContent = inProgress;
-    $id('statDueSoon').textContent = dueSoon;
+    $id('statPending').textContent = pending;
     $id('statOnline').textContent = online;
+    $id('statHighPriority').textContent = highPri;
   }
 
   function updateGasFilter() {
@@ -589,7 +569,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function saveEntry() {
     var gasName = fGasName.value; var loc = fLocation.value.trim();
-    var cylinderId = fCylinderId.value.trim(); var status = fStatus.value;
+    var status = fStatus.value;
     var dueDate = fDueDate.value; var priority = fPriority.value;
     var addedBy = fAddedBy.value; var notes = fNotes.value.trim();
     if (!gasName) { showToast('Please select a gas name.', 'error'); return; }
@@ -599,7 +579,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
       for (var i = 0; i < entries.length; i++) {
         if (entries[i].id === editingId) {
           entries[i].gasName = gasName; entries[i].location = loc;
-          entries[i].cylinderId = cylinderId; entries[i].status = status;
+          entries[i].status = status;
           entries[i].dueDate = dueDate; entries[i].priority = priority;
           entries[i].addedBy = addedBy; entries[i].notes = notes;
           if (useSupabase) { sbUpdate(entries[i]); }
@@ -609,7 +589,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
       showToast('Entry updated successfully!', 'success');
       editingId = null; formTitle.innerHTML = '&#10133; Add New Entry';
     } else {
-      var newEntry = { id: genId(), gasName: gasName, location: loc, cylinderId: cylinderId,
+      var newEntry = { id: genId(), gasName: gasName, location: loc,
         status: status, dueDate: dueDate, priority: priority, addedBy: addedBy,
         notes: notes, created: new Date().toISOString() };
       entries.push(newEntry);
@@ -626,7 +606,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
     if (!e) return;
     editingId = id;
     fGasName.value = e.gasName; fLocation.value = e.location;
-    fCylinderId.value = e.cylinderId; fStatus.value = e.status;
+    fStatus.value = e.status;
     fDueDate.value = e.dueDate; fPriority.value = e.priority;
     fAddedBy.value = e.addedBy || ''; fNotes.value = e.notes;
     formTitle.textContent = '\u270F\uFE0F Edit \u2014 ' + e.gasName + ' @ ' + e.location;
@@ -651,7 +631,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
   }
 
   function resetForm() {
-    editingId = null; fGasName.value = ''; fLocation.value = ''; fCylinderId.value = '';
+    editingId = null; fGasName.value = ''; fLocation.value = '';
     fStatus.value = 'Pre Purge'; fDueDate.value = ''; fPriority.value = 'Medium';
     fAddedBy.value = 'Havas, Adi'; fNotes.value = '';
     formTitle.innerHTML = '&#10133; Add New Entry';
@@ -671,14 +651,13 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function exportCSV() {
     if (entries.length === 0) { showToast('No data to export.', 'error'); return; }
-    var headers = ['Gas Name','Location','Cylinder ID','Status','Due Date','Priority','Added By','Notes','Created'];
+    var headers = ['Gas Name','Location','Status','Date','Priority','Added By','Notes','Created'];
     var lines = [headers.join(',')];
     for (var i = 0; i < entries.length; i++) {
       var e = entries[i];
       var row = [
         '"' + e.gasName + '"',
         '"' + e.location + '"',
-        '"' + e.cylinderId + '"',
         '"' + e.status + '"',
         '"' + e.dueDate + '"',
         '"' + e.priority + '"',
@@ -699,7 +678,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE gas_entries;</div>
 
   function init() {
     fGasName = $id('fGasName'); fLocation = $id('fLocation');
-    fCylinderId = $id('fCylinderId'); fStatus = $id('fStatus');
+    fStatus = $id('fStatus');
     fDueDate = $id('fDueDate'); fPriority = $id('fPriority');
     fAddedBy = $id('fAddedBy'); fNotes = $id('fNotes');
     tableBody = $id('tableBody'); emptyState = $id('emptyState');
